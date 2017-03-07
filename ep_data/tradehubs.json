@@ -1,0 +1,26 @@
+[
+{"hubname": "Jita",
+"regname": "The Forge",
+"region_id": 10000002,
+"system_id": 30000142,
+"station_id": 60003760
+},
+{"hubname": "Dodixie",
+"regname": "Sinq Laison",
+"region_id": 10000032,
+"system_id": 30002659,
+"station_id": 60011866
+},
+{"hubname": "Amarr",
+"regname": "Domain",
+"region_id": 10000043,
+"system_id": 30002187,
+"station_id": 60008494
+},
+{"hubname": "Rens",
+"regname": "Heimatar",
+"region_id": 10000030,
+"system_id": 30002510,
+"station_id": 60004588
+}
+]
