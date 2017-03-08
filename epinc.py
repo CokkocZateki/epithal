@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# EPITHAL
+# Defines various functions for use in main loop.
+
 import eveapi
 import json
 import os

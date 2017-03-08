@@ -1,9 +1,16 @@
 #!/usr/bin/python
 
+# EPITHAL
+# Functions related to ESI API calls.
+
 import time
 import os
 import urllib2
 
+# Name is somewhat misleading
+# Searches cache for a given file
+# If it's missing or old, as defined by cachetime,
+# Then pulls the data from ESI
 def pullfromcache(urlstring,cachetime):
 	cachestale=False
 	cachefile=urlstring.replace("/","_").replace("?","_")

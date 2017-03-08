@@ -12,6 +12,7 @@ items=epinc.loaditems()
 names=epinc.loadnames()
 tradehubs=epinc.loadtradehubs()
 products=[]
+productcount=0
 
 def findlowestsellpricewithquant(hub, typeid, quant):
 	lowestprice = -1
@@ -75,6 +76,7 @@ def typeidfromname(name):
 
 # defines a product as a set of input materials and output
 def defineproduct():
+	global productcount
 	matarray = [0]*50000
 	fillerlines = 0
 	
@@ -161,18 +163,25 @@ def defineproduct():
 		
 	prodd.setdefault("nickname",nickname)
 	
-#	print prodd
-	
 	outpath = os.path.join("ep_data","products")
 	if not os.path.exists(outpath):
 		os.makedirs(outpath)
 		
-	filename = os.path.join(outpath,nickname.replace(" ","_").lower()+".json")
+	filename = nickname.replace(" ","_").lower()+".json"
+	filepath = os.path.join(outpath,filename)
 	
-	with open (filename, 'w') as outfile:
+	with open (filepath, 'w') as outfile:
 		json.dump(prodd,outfile)
 		outfile.close()
 		print "Saved product "+ nickname
+
+	#add it to the index
+		
+	prodi={}
+	prodi.setdefault("nickname",nickname)
+	prodi.setdefault("filename",filename)
+	products.append(prodi)
+	productcount+=1
 		
 def selecthub(prompt):
 	i=1
@@ -189,13 +198,14 @@ def selecthub(prompt):
 		print "Please enter a number!"
 	return int(hubno)-1
 	
-def prodreport(prod,buyhub,sellhub):
+def prodreport(prod,buyhub,sellhub,short):
 	buildprice = 0
 	failedbuild = 0
-	print
-	print "Running report on " + prod["nickname"] + "."
-	print "Buying in " + buyhub["hubname"] + " selling in " + sellhub["hubname"] + "."
-	print
+	if short == False:
+		print
+		print "Running report on " + prod["nickname"] + "."
+		print "Buying in " + buyhub["hubname"] + " selling in " + sellhub["hubname"] + "."
+		print
 	json_file=os.path.join("ep_data","products",prod["filename"])
 	with open(json_file) as json_data:
 		proddata=json.load(json_data)
@@ -203,51 +213,71 @@ def prodreport(prod,buyhub,sellhub):
 		for material in proddata["inputs"]:
 			matprice = findlowestsellpricewithquant(buyhub,material["typeid"],material["quant"])
 			if matprice < 0:
-				print "No suitable sell order for " + names[material["typeid"]] + "!"
+				if short==False:
+					print "No suitable sell order for " + names[material["typeid"]] + "!"
 				failedbuild = 1
-			else:
+			elif short==False:
 				print names[material["typeid"]] + " selling for " + str(matprice)
 			buildprice += (matprice * material["quant"])
-		print
+			
+		if short==False:
+			print
+			
 		if failedbuild > 0:
-			print "One or more materials not for sale in sufficient quantity in "+buyhub["hubname"] + "!"
+			if short==True:
+				print prod["nickname"].rjust(40) + " parts not for sale in " + buyhub["hubname"] + "!"
+			else:
+				print "One or more materials not for sale in sufficient quantity in "+buyhub["hubname"] + "!"
 		else:
-			print "Total build price: {:,.2f}".format(buildprice)
 			sellprice = findlowestsellpricewithquant(sellhub,proddata["outputid"],1) * proddata["outputquant"]
-			print "Selling for: {:,.2f}".format(sellprice)
 			profit = sellprice-buildprice
 			profitratio = profit/buildprice
-			if profit > 0:
-				print "Net profit: {:,.2f}".format(profit)
-				print "Profit ratio: {:.0%}".format(profitratio)
+			if short==True:
+				print prod["nickname"].rjust(40) + "{:,.2f}".format(profit).rjust(20) + " ({:.0%})".format(profitratio)
 			else:
-				print "Net loss: {:,.2f}".format(profit)
-				print "Loss ratio: {:.0%}".format(profitratio)
+				print "Total build price: {:,.2f}".format(buildprice)
+				print "Selling for: {:,.2f}".format(sellprice)
+				if profit > 0:
+					print "Net profit: {:,.2f}".format(profit)
+					print "Profit ratio: {:.0%}".format(profitratio)
+				else:
+					print "Net loss: {:,.2f}".format(profit)
+					print "Loss ratio: {:.0%}".format(profitratio)
 		
 	
 def marketanalysis():
-	showproductindex()
+	global productcount
+	if(productcount>0):
+		showproductindex()
 
-	print
-	prodno = raw_input("Run report on which product? ")
-	try:
-		if not int(prodno):
-			raise ValueError()
-		else:
-			prodi=int(prodno)
-			prodi-=1
-			if prodi < 0:
-				print "Please enter a valid product number."
-			else:
+		print
+		prodno = raw_input("Run report on which product? (or 'all') ")
+		try:
+			if prodno=="a" or prodno=="all":
 				buyhubi = selecthub("Select buy hub: ")
 				sellhubi = selecthub("Select sell hub: ")
-				prodreport(products[prodi],tradehubs[buyhubi],tradehubs[sellhubi])
-	except ValueError:
-		print "Please enter a number!"
+				print
+				print "PRODUCT".rjust(40) + "GROSS PROFIT".rjust(20) + " RATIO"
+				for product in products:
+					prodreport(product,tradehubs[buyhubi],tradehubs[sellhubi],True)
+			elif not int(prodno):
+				raise ValueError()
+			else:
+				prodi=int(prodno)
+				prodi-=1
+				if prodi < 0:
+					print "Please enter a valid product number."
+				else:
+					buyhubi = selecthub("Select buy hub: ")
+					sellhubi = selecthub("Select sell hub: ")
+					prodreport(products[prodi],tradehubs[buyhubi],tradehubs[sellhubi],False)
+		except ValueError:
+			print "Please enter a number!"
+	else:
+		print "You need to define at least one product first."
 
-loadproductindex()
 epinc.showlogo()
-
+productcount=loadproductindex()
 userquit = 0
 
 while userquit==0:

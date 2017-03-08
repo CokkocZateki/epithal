@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+# EPITHAL
+# pre-setup functions
+# These were used to build the names.json included with EPTITHAL
+# It will likely not be needed to use these until CCP adds more
+# items to EvE industry.
+
 import json
 import os
 import eveapi
