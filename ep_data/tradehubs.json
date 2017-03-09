@@ -17,6 +17,12 @@
 "system_id": 30002187,
 "station_id": 60008494
 },
+{"hubname": "Hek",
+"regname": "Metropolis",
+"region_id": 10000042,
+"system_id": 30002053,
+"station_id": 60005686
+},
 {"hubname": "Rens",
 "regname": "Heimatar",
 "region_id": 10000030,
