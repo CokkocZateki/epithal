@@ -70,7 +70,6 @@ def takenameinput(prompt):
 	typename=raw_input(prompt)
 	if len(typename) > 0:
 		typeid = gettypeid(typename)
-		return typeid
 	if typeid<1:
 		i = 0
 		regpat = re.compile(typename)
@@ -92,7 +91,8 @@ def takenameinput(prompt):
 				else: 
 					matchidi=int(matchid)-1
 					if matchidi < j:
-						return gettypeid(partialmatches[matchidi])
+						typeid=gettypeid(partialmatches[matchidi])
 			except ValueError:
 				return -1
+	return typeid
 			
