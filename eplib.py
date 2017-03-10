@@ -6,6 +6,9 @@
 import eveapi
 import json
 import os
+import re
+
+names={}
 
 def showlogo():
 	print
@@ -26,6 +29,7 @@ def loaditems():
 		return items
 
 def loadnames():
+	global names
 	json_file=os.path.join("ep_data","names.json")
 	with open(json_file) as json_data:
 		names=json.load(json_data)
@@ -42,9 +46,53 @@ def showmainmenu():
 def loadtradehubs():
 	hubsfile = os.path.join("ep_data","tradehubs.json")
 	if not os.path.exists(hubsfile):
-		print "No trade hubs defined found."
+		print "No trade hubs defined."
 		return 0
 	else:
 		with open(hubsfile) as hub_data:
 			tradehubs=json.load(hub_data)
 			return tradehubs
+
+def getname(typeid):
+	return names[typeid]
+	
+def gettypeid(name):
+	i = 0
+	while i < len(names):
+		if name.lower() == names[i].lower():
+			return i
+		i+=1
+	return -1
+	
+def takenameinput(prompt):
+	partialmatches = []
+	typeid = 0
+	typename=raw_input(prompt)
+	if len(typename) > 0:
+		typeid = gettypeid(typename)
+		return typeid
+	if typeid<1:
+		i = 0
+		regpat = re.compile(typename)
+		while i < len(names) and len(partialmatches)<40:
+			if regpat.search(names[i].lower()):
+				partialmatches.append(names[i])
+			i+=1
+		if len(partialmatches)>0:
+			j=0
+			print "Partial matches for ("+typename+")"
+			for match in partialmatches:
+				j+=1
+				print str(j)+") "+match
+			print
+			matchid=raw_input("Choose a partial match: ")
+			try:
+				if not int(matchid):
+					raise ValueError()
+				else: 
+					matchidi=int(matchid)-1
+					if matchidi < j:
+						return gettypeid(partialmatches[matchidi])
+			except ValueError:
+				return -1
+			
