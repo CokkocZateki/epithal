@@ -1,16 +1,21 @@
 #!/usr/bin/python
 
+# EPITHAL
+# Main functions/workflow
+# TODO? move some of this to eplib.py
+
 import os
 import json
 import eveapi
 import presetup
-import epinc
+import eplib
 
 cachetime_market = 600
 
-items=epinc.loaditems()
-names=epinc.loadnames()
-tradehubs=epinc.loadtradehubs()
+eplib.loadnames()
+#items=eplib.loaditems()
+
+tradehubs=eplib.loadtradehubs()
 products=[]
 productcount=0
 
@@ -28,12 +33,13 @@ def findlowestsellpricewithquant(hub, typeid, quant):
 	return lowestprice
 
 def checksellorders():
-	typename=raw_input("Enter product to price-check: ")
-	typeid = -1
-	if len(typename) > 0:
-		typeid = typeidfromname(typename)
+#	typename=raw_input("Enter product to price-check: ")
+#	typeid = -1
+#	if len(typename) > 0:
+#		typeid = eplib.gettypeid(typename)
+	typeid = eplib.takenameinput("Enter product to price-check: ")
 	if(typeid < 1):
-		print "No item named ("+typename+") found."
+		print "No matching item found."
 	else:
 		print
 		for hub in tradehubs:
@@ -66,14 +72,6 @@ def showproductindex():
 		print str(i) + ") " + prod["nickname"]
 		i+=1
 	
-def typeidfromname(name):
-	i = 0
-	while i < len(names):
-		if name.lower() == names[i].lower():
-			return i
-		i+=1
-	return -1
-
 # defines a product as a set of input materials and output
 def defineproduct():
 	global productcount
@@ -113,7 +111,7 @@ def defineproduct():
 			inputmat = {}
 			inputmat["typeid"]=i
 			inputmat["quant"]=matarray[i]
-			print str(matarray[i]).rjust(20) + " x " + names[i]
+			print str(matarray[i]).rjust(20) + " x " + eplib.getname(i)
 			prodd["inputs"].append(inputmat)
 		i+=1
 		
@@ -122,12 +120,12 @@ def defineproduct():
 	print 
 	validoutput = 0
 	while validoutput == 0:
-		typename=raw_input("Enter output product: ")
-		typeid = -1
-		if len(typename) > 0:
-			typeid = typeidfromname(typename)
+		typeid=eplib.takenameinput("Enter output product: ")
+#		typeid = -1
+#		if len(typename) > 0:
+#			typeid = eplib.gettypeid(typename)
 		if(typeid < 0):
-			print "No item named ("+typename+") found. Try again."
+			print "No such item found. Try again."
 			validoutput = 0
 		else:
 			prodd.setdefault("outputid",typeid)
@@ -148,11 +146,11 @@ def defineproduct():
 		except ValueError:
 			print "Please enter an number."
 			
-	prodd.setdefault("outputname",names[prodd["outputid"]])
+	prodd.setdefault("outputname",eplib.getname(prodd["outputid"]))
 	
 	#finishing touches: get a meaningful (or not) nickname and save the dict as a json for later
 			
-	defaultnick = names[prodd["outputid"]] + " x " + str(prodd["outputquant"])
+	defaultnick = eplib.getname(prodd["outputid"]) + " x " + str(prodd["outputquant"])
 	
 	print "Enter product nickname, or press enter to accept default."
 	print "("+defaultnick+")"
@@ -214,10 +212,10 @@ def prodreport(prod,buyhub,sellhub,short):
 			matprice = findlowestsellpricewithquant(buyhub,material["typeid"],material["quant"])
 			if matprice < 0:
 				if short==False:
-					print "No suitable sell order for " + names[material["typeid"]] + "!"
+					print "No suitable sell order for " + eplib.getname(material["typeid"]) + "!"
 				failedbuild = 1
 			elif short==False:
-				print names[material["typeid"]] + " selling for " + str(matprice)
+				print eplib.getname(material["typeid"]) + " selling for " + str(matprice)
 			buildprice += (matprice * material["quant"])
 			
 		if short==False:
@@ -276,12 +274,12 @@ def marketanalysis():
 	else:
 		print "You need to define at least one product first."
 
-epinc.showlogo()
+eplib.showlogo()
 productcount=loadproductindex()
 userquit = 0
 
 while userquit==0:
-	epinc.showmainmenu()
+	eplib.showmainmenu()
 	try:
 		selection = raw_input("Choose an action: ")
 		if not int(selection):
