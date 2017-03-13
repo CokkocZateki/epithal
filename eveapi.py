@@ -5,6 +5,7 @@
 
 import time
 import os
+import sys
 import urllib2
 
 # Name is somewhat misleading
@@ -30,16 +31,20 @@ def pullfromcache(urlstring,cachetime):
 	else:
 		cachestale=True
 	if cachestale==True:
-		url="https://esi.tech.ccp.is/latest/"+urlstring
-		response=urllib2.urlopen(url)
-		web_data=response.read()
-		clean_data=web_data.replace("\u2018","'")
-		clean_data=clean_data.replace("\u2013","-")
-		clean_data=clean_data.replace("\u2019","'")
-		clean_data=clean_data.replace("\u201c","'")
-		clean_data=clean_data.replace("\u201d","'")
-		with open(cachepath,"w") as outfile:
-			outfile.write(clean_data)
-			outfile.close()
-		
+		try:
+			url="https://esi.tech.ccp.is/latest/"+urlstring
+			response=urllib2.urlopen(url)
+			web_data=response.read()
+			clean_data=web_data.replace("\u2018","'")
+			clean_data=clean_data.replace("\u2013","-")
+			clean_data=clean_data.replace("\u2019","'")
+			clean_data=clean_data.replace("\u201c","'")
+			clean_data=clean_data.replace("\u201d","'")
+			with open(cachepath,"w") as outfile:
+				outfile.write(clean_data)
+				outfile.close()
+		except URLError:
+			print "Fatal Error: Cannot connect to ESI API."
+			sys.exit()
+			
 	return cachepath

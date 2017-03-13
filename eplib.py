@@ -12,13 +12,7 @@ names={}
 
 def showlogo():
 	print
-	print "	(E)ve"
-	print "	(P)ython"
-	print "	(I)ndustrial"
-	print "	(T)ool"
-	print "	(H)elper"
-	print "	(A)nd"
-	print "	(L)ogic"
+	print "(E)ve (P)ython (I)ndustrial (T)ool (H)elper (A)nd (L)ogic"
 
 	
 def loaditems():
@@ -37,9 +31,16 @@ def loadnames():
 		
 def showmainmenu():
 	print
-	print "(1) Define new product"
-	print "(2) Market analysis on products"
-	print "(3) Check sell orders for an item"
+	print "(1) Select portfolio"
+	print
+	print "(2) Define new product"
+	print "(3) View/edit product"
+	print
+	print "(4) Market analysis on product"
+	print "(5) Multi-product market analysis"
+	print
+	print "(7) Price-check an item"
+	print
 	print "(10) Quit"
 	print
 
@@ -95,4 +96,30 @@ def takenameinput(prompt):
 			except ValueError:
 				return -1
 	return typeid
+
+def inputnumber(prompt):
+	validinput=False
+	while not validinput:
+		inputstr=raw_input(prompt)
+		try:
+			outnum=int(inputstr)
+			validinput=True
+		except ValueError:
+			print "Please enter a number."
+	
+	return outnum
 			
+def inputnumberorall(prompt):
+	validinput=False
+	while not validinput:
+		inputstr=raw_input(prompt)
+		if inputstr=="a" or inputstr=="all":
+			return "all"
+		try:
+			outnum=int(inputstr)
+			validinput=True
+		except ValueError:
+			print "Please enter a number."
+	
+	return outnum
+	
