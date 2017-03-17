@@ -31,13 +31,14 @@ def loadnames():
 		
 def showmainmenu():
 	print
-	print "(1) Select portfolio"
+	print "(1) Define new product"
+	print "(2) View/edit product"
 	print
-	print "(2) Define new product"
-	print "(3) View/edit product"
+	print "(3) Market analysis on product"
+	print "(4) Multi-product market analysis"
 	print
-	print "(4) Market analysis on product"
-	print "(5) Multi-product market analysis"
+	print "(5) Select portfolio"
+	print "(6) Create portfolio"
 	print
 	print "(7) Price-check an item"
 	print

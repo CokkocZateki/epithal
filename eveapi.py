@@ -9,7 +9,7 @@ import sys
 import urllib2
 
 # Name is somewhat misleading
-# Searches cache for a given file
+# Searches cache for a given APi result
 # If it's missing or old, as defined by cachetime,
 # Then pulls the data from ESI
 def pullfromcache(urlstring,cachetime):

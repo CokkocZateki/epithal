@@ -21,6 +21,7 @@ eplib.loadnames()
 tradehubs=eplib.loadtradehubs()
 
 # These will be filled in when we pick a portfolio
+activefolio=""
 products=[]
 productcount=0
 
@@ -50,10 +51,62 @@ def checksellorders():
 			price = findlowestsellpricewithquant(hub, typeid, 1)
 			print hub["hubname"].rjust(20) + ": {:,.2f}".format(price)	
 			
+def loadportfolio(portfolio):
+	global products
+	global activefolio
+	del products[:]
+	
+	foliopath=os.path.join("ep_data","portfolios",portfolio+".json")
+	with open(foliopath) as json_data:
+		products=json.load(json_data)
+		activefolio=portfolio
+		
+	return len(products)
+			
+def selectportfolio():
+	i=0
+	foliospath=os.path.join("ep_data","portfolios")
+	folionames=[]
+	print
+	print "Avaliable portfolios:"
+	print
+	for file in os.listdir(foliospath):
+		if file.lower().endswith('.json'):
+			fileprefix=file.rsplit(".",1)
+			i+=1
+			print str(i) + ") " + fileprefix[0]
+			folionames.append(fileprefix[0])
+	print "a) All Products"	
+	print
+	print folionames
+	portnum=eplib.inputnumberorall("Choose a portfolio: ")
+	if portnum=="all":
+		loadproductindex()
+	else:
+		loadportfolio(folionames[portnum-1])
+
+def saveactivefolio():
+	global products
+	global activefolio
+	
+	if not os.path.exists(os.path.join("ep_data","portfolios")):
+		os.makedirs(os.path.join("ep_data","portfolios"))
+	
+	foliopath=os.path.join("ep_data","portfolios",activefolio+".json")
+	
+	with open (foliopath, 'w') as outfile:
+		json.dump(products,outfile)
+		outfile.close()
+
+# Loads all products as a portfolio			
 def loadproductindex():
 	global products
+	global activefolio
+	del products[:]
+	
 	prodpath = os.path.join("ep_data","products")
 	i=0
+	activefolio = "All Products"
 	if not os.path.exists(prodpath):
 		print "No saved products found."
 		return 0
@@ -181,13 +234,15 @@ def defineproduct():
 		outfile.close()
 		print "Saved product "+ nickname
 
-	#add it to the index
+	#add it to the portfolio
+	addtoactive=raw_input("Add " + nickname + " to portfolio " + activefolio + " ? (y/n) ")
+	if addtoactive.lower()=="yes" or addtoactive.lower()=="y" or activefolio=="All Products":
+		prodi={}
+		prodi.setdefault("nickname",nickname)
+		prodi.setdefault("filename",filename)
+		products.append(prodi)
+		productcount+=1
 		
-	prodi={}
-	prodi.setdefault("nickname",nickname)
-	prodi.setdefault("filename",filename)
-	products.append(prodi)
-	productcount+=1
 		
 def selecthub(prompt):
 	i=1
@@ -298,9 +353,10 @@ def marketanalysismulti():
 	analysis = []
 	if(productcount>0):
 		showproductindex()
-
+		print "a) All Products"
+		
 		print
-		prodi = raw_input("Enter a list of producs separated by spaces: ")
+		prodi = raw_input("Enter a list of products separated by spaces: ")
 		buyhubi = selecthub("Select buy hub: ")
 		sellhubi = selecthub("Select sell hub: ")
 		
@@ -320,6 +376,45 @@ def marketanalysismulti():
 	else:
 		print "You need to define at least one product first."
 
+def defineportfolio():
+	global productcount
+	folioprods = []
+	if(productcount>0):
+		showproductindex()
+		print "a) All Products"
+		
+		print
+		prodi = raw_input("Enter a list of products separated by spaces: ")
+		
+		if prodi=="all" or prodi=="a":
+			for product in products:
+				folioprods.append(product)
+		else:		
+			for i in prodi.split():
+				try:
+					prodnum=int(i)-1
+					folioprods.append(products[prodnum])
+				except ValueError:
+					print "Skipping " + i	
+					
+		rawname = raw_input("Enter an name for this portfolio: ")
+		fixedname=rawname.replace("/","_").replace("?","_").replace("\\","_").replace(":","_").replace("*","_")
+		filename=fixedname+".json"
+	
+		if not os.path.exists(os.path.join("ep_data","portfolios")):
+			os.makedirs(os.path.join("ep_data","portfolios"))
+			
+		foliopath=os.path.join("ep_data","portfolios",filename)
+		with open (foliopath, 'w') as outfile:
+			json.dump(folioprods,outfile)
+			outfile.close()
+		
+		makeactive=raw_input("Make "+fixedname+ " the active portfolio? (y/n) ")
+		if makeactive.lower()=="yes" or makeactive.lower()=="y":
+			loadportfolio(fixedname)
+		
+	else:
+		print "You need to define at least one product first."		
 		
 eplib.showlogo()
 productcount=loadproductindex()
@@ -327,25 +422,31 @@ userquit = 0
 
 while userquit==0:
 	eplib.showmainmenu()
+	print "Active portfolio: "+activefolio
 	try:
 		selection = raw_input("Choose an action: ")
 		if not int(selection):
 			raise ValueError()
 		else: 
 			selectioni=int(selection)
-#		if selectioni==1:
-#			productcount=
-		if selectioni==2:
+		if selectioni==1:
 			defineproduct()
-		if selectioni==4:
+		if selectioni==3:
 			marketanalysis()
-		if selectioni==5:
+		if selectioni==4:
 			marketanalysismulti()
+		if selectioni==5:
+			selectportfolio()
+		if selectioni==6:
+			defineportfolio()
 		if selectioni==7:
 			checksellorders()
 		if selectioni==10:
 			userquit=1
 	except ValueError:
 		print "Please enter a number!"
-		
+
+if activefolio!="All Products":
+	saveactivefolio()		
+	
 print "Goodbye."
