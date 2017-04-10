@@ -43,8 +43,10 @@ def pullfromcache(urlstring,cachetime):
 			with open(cachepath,"w") as outfile:
 				outfile.write(clean_data)
 				outfile.close()
-		except URLError:
-			print "Fatal Error: Cannot connect to ESI API."
-			sys.exit()
-			
+		except urllib2.HTTPError: 			
+			print url
+			print "Failed to connect to API"
+			if not os.path.isfile(cachepath):
+				print "FATAL, no cached data available and cannot connect to API."
+				sys.exit()			
 	return cachepath

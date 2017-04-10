@@ -78,7 +78,7 @@ def selectportfolio():
 			folionames.append(fileprefix[0])
 	print "a) All Products"	
 	print
-	print folionames
+	#print folionames
 	portnum=eplib.inputnumberorall("Choose a portfolio: ")
 	if portnum=="all":
 		loadproductindex()
@@ -138,7 +138,7 @@ def defineproduct():
 	fillerlines = 0
 	
 	#step 1: take a list of meterials copy-pasted from the EvE industry interface
-	#todo? expand to take manual material x quantity input
+	#todo? expand to take manual material x quantity input	
 	
 	print "Copy-paste input materials from the EvE industry interface."
 	print "Type 'done' when finished."
@@ -243,6 +243,53 @@ def defineproduct():
 		products.append(prodi)
 		productcount+=1
 		
+def editsingleproduct(prod):
+	returning=False
+	json_file=os.path.join("ep_data","products",prod["filename"])
+	with open(json_file) as json_data:
+		proddata=json.load(json_data)
+		
+		while not returning:
+			i=0
+			for material in proddata["inputs"]:
+				i+=1
+				print str(i)+") " + str(material["quant"]) + " x " + eplib.getname(material["typeid"])
+			print "a) Add new material"
+			print "d) Done with this product"
+			print
+			editmat=eplib.inputnumberorletters("Manage which material? ","ad")
+			if editmat=="a":
+				newtypeid = eplib.takenameinput("Enter new material type: ")
+				newquant = eplib.inputnumber("Enter new material quantity: ")
+				newmat = {}
+				newmat["typeid"]=newtypeid
+				newmat["quant"]=newquant
+				proddata["inputs"].append(newmat)
+			elif editmat=="d":
+				returning=True
+	
+	with open (json_file, 'w') as outfile:
+		json.dump(proddata,outfile)
+		outfile.close()
+		print "Saved product "+ proddata["nickname"]
+		
+		
+def editproduct():
+	global productcount
+	if(productcount>0):
+		showproductindex()
+
+		print
+		prodi = eplib.inputnumber("Manage which product? ")
+		if prodi < 0:
+			print "Please enter a valid product number."
+		else:
+			prodi -= 1
+			editsingleproduct(products[prodi])
+			
+	else:
+		print "You need to define at least one product first."
+
 		
 def selecthub(prompt):
 	i=1
@@ -431,6 +478,8 @@ while userquit==0:
 			selectioni=int(selection)
 		if selectioni==1:
 			defineproduct()
+		if selectioni==2:
+			editproduct()
 		if selectioni==3:
 			marketanalysis()
 		if selectioni==4:

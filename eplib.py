@@ -10,10 +10,59 @@ import re
 
 names={}
 
+def loadallproducts():
+	products=[]
+	prodpath = os.path.join("ep_data","products")
+	i=0
+#	activefolio = "All Products"
+	for file in os.listdir(prodpath):
+		if file.lower().endswith('.json'):
+			with open(os.path.join(prodpath,file)) as json_data:
+				prodd=json.load(json_data)
+				pi={}
+				pi.setdefault("nickname",prodd["nickname"])
+				pi.setdefault("filename",file)
+				pi.setdefault("index",i)
+				products.append(pi)
+				i+=1
+				
+	return products
+	
+def loadportfolio(portfolio):
+	products=[]
+	
+	foliopath=os.path.join("ep_data","portfolios",portfolio+".json")
+	
+	with open(foliopath) as json_data:
+		products=json.load(json_data)
+		
+	i=0
+	for pi in products:
+		pi.setdefault("index",i)
+		i+=1
+				
+	return (products)
+			
+
 def showlogo():
 	print
 	print "(E)ve (P)ython (I)ndustrial (T)ool (H)elper (A)nd (L)ogic"
+	
+def loadproductdata(filename):
+	json_file=os.path.join("ep_data","products",filename)
+	with open(json_file) as json_data:
+		proddata=json.load(json_data)
+		return proddata
 
+def loadportfolios():
+	foliospath=os.path.join("ep_data","portfolios")
+	folionames=[]
+	for file in os.listdir(foliospath):
+		if file.lower().endswith('.json'):
+			fileprefix=file.rsplit(".",1)
+			folionames.append(fileprefix[0])
+			
+	return folionames
 	
 def loaditems():
 	# pull all market items from ESI
@@ -116,6 +165,22 @@ def inputnumberorall(prompt):
 		inputstr=raw_input(prompt)
 		if inputstr=="a" or inputstr=="all":
 			return "all"
+		try:
+			outnum=int(inputstr)
+			validinput=True
+		except ValueError:
+			print "Please enter a number."
+	
+	return outnum
+	
+def inputnumberorletters(prompt,allowedletters):
+	validinput=False
+	while not validinput:
+		inputstr=raw_input(prompt)
+		firstchar=inputstr[:1]
+		regex=re.compile(firstchar)
+		if regex.search(allowedletters):
+			return firstchar
 		try:
 			outnum=int(inputstr)
 			validinput=True
